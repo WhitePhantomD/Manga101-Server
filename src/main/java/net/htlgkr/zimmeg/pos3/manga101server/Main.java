@@ -4,7 +4,12 @@ import net.htlgkr.zimmeg.pos3.manga101server.models.Chapter;
 import net.htlgkr.zimmeg.pos3.manga101server.models.Manga;
 import net.htlgkr.zimmeg.pos3.manga101server.models.Page;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -74,36 +79,6 @@ public class Main {
         tongariBooshiNoAtorie.setChapters(createChapters2(tongariBooshiNoAtorie, "mangatestres/tongari-booshi-no-atorie_c001 _ c010"));
 
     }
-
-    private static List<Chapter> createChapters(Manga manga, String filePath) {
-        File mainFolder = new File(filePath);
-        File[] directories = mainFolder.listFiles(File::isDirectory);
-        Arrays.sort(directories);
-        int firstChapter = Integer.parseInt(directories[0].getName().substring(1));
-
-        int chapterCount = (int) mainFolder.listFiles(File::isDirectory).length;
-        if (firstChapter == 0) {
-            chapterCount = chapterCount - 1;
-        }
-
-        return IntStream.rangeClosed(firstChapter, chapterCount)
-                .mapToObj(i -> {
-                    Chapter chapter = new Chapter("Chapter " + i, i, manga);
-                    System.out.println("Chapter" + i + " " + manga.getTitle());
-                    File folder = new File(filePath + "/c" + String.format("%03d", i) + "/");
-                    System.out.println(folder.getPath());
-                    int numberOfPages = folder.listFiles(File::isFile).length;
-                    System.out.println("Pages: "+numberOfPages);
-                    List<Page> pages = IntStream.rangeClosed(1, numberOfPages)
-                            .mapToObj(j -> new Page(j, new File(folder.getPath() + "/" + String.format("%03d", j) + ".jpg"), chapter))
-                            .peek(page -> System.out.println(page.getPageNumber()))
-                            .toList();
-                    chapter.setPages(pages);
-                    return chapter;
-                })
-                .collect(Collectors.toList());
-    }
-
     private static List<Chapter> createChapters2(Manga manga, String filePath) {
         File mainFolder = new File(filePath);
         File[] directories = mainFolder.listFiles(File::isDirectory);
@@ -113,18 +88,78 @@ public class Main {
                 .map(directory -> {
                     String chapterName = directory.getName().substring(1);
                     Chapter chapter = new Chapter("Chapter " + chapterName, Double.parseDouble(chapterName), manga);
-                    System.out.println("Chapter" + chapterName + " " + manga.getTitle());
                     File folder = new File(filePath + "/" + directory.getName() + "/");
                     System.out.println(folder.getPath());
                     int numberOfPages = folder.listFiles(File::isFile).length;
-                    System.out.println("Pages: "+numberOfPages);
                     List<Page> pages = IntStream.rangeClosed(1, numberOfPages)
-                            .mapToObj(j -> new Page(j, new File(folder.getPath() + "/" + String.format("%03d", j) + ".jpg"), chapter))
-                            .peek(page -> System.out.println(page.getPageNumber()))
-                            .collect(Collectors.toList());
+                            .mapToObj(j -> {
+                                try {
+                                    BufferedImage inputImage = ImageIO.read(Files.newInputStream(Path.of(folder.toPath() + "/" + String.format("%03d", j) + ".jpg")));
+                                    ByteArrayOutputStream jpgContent = new ByteArrayOutputStream();
+                                    ImageIO.write(inputImage, "jpg", jpgContent);
+                                    return new Page(j, jpgContent.toByteArray(), chapter);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                return null;
+                            })
+                            .toList();
                     chapter.setPages(pages);
                     return chapter;
                 })
                 .toList();
     }
+
+//    private static List<Chapter> createChapters(Manga manga, String filePath) {
+//        File mainFolder = new File(filePath);
+//        File[] directories = mainFolder.listFiles(File::isDirectory);
+//        Arrays.sort(directories);
+//        int firstChapter = Integer.parseInt(directories[0].getName().substring(1));
+//
+//        int chapterCount = mainFolder.listFiles(File::isDirectory).length;
+//        if (firstChapter == 0) {
+//            chapterCount = chapterCount - 1;
+//        }
+//
+//        return IntStream.rangeClosed(firstChapter, chapterCount)
+//                .mapToObj(i -> {
+//                    Chapter chapter = new Chapter("Chapter " + i, i, manga);
+//                    System.out.println("Chapter" + i + " " + manga.getTitle());
+//                    File folder = new File(filePath + "/c" + String.format("%03d", i) + "/");
+//                    System.out.println(folder.getPath());
+//                    int numberOfPages = folder.listFiles(File::isFile).length;
+//                    System.out.println("Pages: "+numberOfPages);
+//                    List<Page> pages = IntStream.rangeClosed(1, numberOfPages)
+//                            .mapToObj(j -> new Page(j, new File(folder.getPath() + "/" + String.format("%03d", j) + ".jpg"), chapter))
+//                            .peek(page -> System.out.println(page.getPageNumber()))
+//                            .toList();
+//                    chapter.setPages(pages);
+//                    return chapter;
+//                })
+//                .collect(Collectors.toList());
+//    }
+//
+//    private static List<Chapter> createChapters2(Manga manga, String filePath) {
+//        File mainFolder = new File(filePath);
+//        File[] directories = mainFolder.listFiles(File::isDirectory);
+//        Arrays.sort(directories);
+//
+//        return Arrays.stream(directories)
+//                .map(directory -> {
+//                    String chapterName = directory.getName().substring(1);
+//                    Chapter chapter = new Chapter("Chapter " + chapterName, Double.parseDouble(chapterName), manga);
+//                    System.out.println("Chapter" + chapterName + " " + manga.getTitle());
+//                    File folder = new File(filePath + "/" + directory.getName() + "/");
+//                    System.out.println(folder.getPath());
+//                    int numberOfPages = folder.listFiles(File::isFile).length;
+//                    System.out.println("Pages: "+numberOfPages);
+//                    List<Page> pages = IntStream.rangeClosed(1, numberOfPages)
+//                            .mapToObj(j -> new Page(j, new File(folder.getPath() + "/" + String.format("%03d", j) + ".jpg"), chapter))
+//                            .peek(page -> System.out.println(page.getPageNumber()))
+//                            .collect(Collectors.toList());
+//                    chapter.setPages(pages);
+//                    return chapter;
+//                })
+//                .toList();
+//    }
 }

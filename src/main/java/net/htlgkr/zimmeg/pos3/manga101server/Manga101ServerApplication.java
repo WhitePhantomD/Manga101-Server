@@ -9,7 +9,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import java.io.File;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,8 +63,18 @@ public class Manga101ServerApplication {
                     File folder = new File(filePath + "/" + directory.getName() + "/");
                     int numberOfPages = folder.listFiles(File::isFile).length;
                     List<Page> pages = IntStream.rangeClosed(1, numberOfPages)
-                            .mapToObj(j -> new Page(j, new File(folder.getPath() + "/" + String.format("%03d", j) + ".jpg"), chapter))
-                            .collect(Collectors.toList());
+                            .mapToObj(j -> {
+                                try {
+                                    BufferedImage inputImage = ImageIO.read(Files.newInputStream(Path.of(folder.toPath() + "/" + String.format("%03d", j) + ".jpg")));
+                                    ByteArrayOutputStream jpgContent = new ByteArrayOutputStream();
+                                    ImageIO.write(inputImage, "jpg", jpgContent);
+                                    return new Page(j, jpgContent.toByteArray(), chapter);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                return null;
+                            })
+                            .toList();
                     chapter.setPages(pages);
                     return chapter;
                 })

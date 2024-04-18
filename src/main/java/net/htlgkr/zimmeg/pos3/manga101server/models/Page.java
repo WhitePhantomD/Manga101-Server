@@ -18,12 +18,14 @@ public class Page {
     private int id;
 
     private int pageNumber;
-    private File image;
+
+    @Lob
+    private byte[] image;
 
     @ManyToOne
     private Chapter chapter;
 
-    public Page(int pageNumber, File image, Chapter chapter) {
+    public Page(int pageNumber, byte[] image, Chapter chapter) {
         this.pageNumber = pageNumber;
         this.image = image;
         this.chapter = chapter;
