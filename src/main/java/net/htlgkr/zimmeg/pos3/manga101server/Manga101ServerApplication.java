@@ -31,8 +31,8 @@ public class Manga101ServerApplication {
     @Bean
     public CommandLineRunner seedDatabase(MangaRepository mangaRepository) {
         return args -> {
-            List<Manga> mangas = createMangas("mangatestres");
-            mangaRepository.saveAll(mangas);
+//            List<Manga> mangas = createMangas("mangatestres");
+//            mangaRepository.saveAll(mangas);
 
         };
     }
