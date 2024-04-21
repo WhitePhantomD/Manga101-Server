@@ -10,76 +10,62 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Main {
     public static void main(String[] args) {
-        String filePath = "mangatestres/eleceed_c001 _ c010";
-
-        File mainFolder = new File(filePath);
-        int chapterCount = (int) mainFolder.listFiles(File::isDirectory).length;
-
-        System.out.println(chapterCount);
-
-        mainFolder = new File(filePath);
-        File[] directories = mainFolder.listFiles(File::isDirectory);
-        Arrays.sort(directories);
-        int firstChapter = Integer.parseInt(directories[0].getName().substring(1));
-
-        chapterCount = (int) mainFolder.listFiles(File::isDirectory).length;
-        File folder = new File(filePath + "/c" + String.format("%03d", firstChapter) + "/");
-        int numberOfPages = folder.listFiles(File::isFile).length;
-
-        System.out.println(folder.getPath());
-        System.out.println(numberOfPages);
-
-        filePath = "mangatestres/hero-killer-beolkkul_c001 _ c010";
-
-        mainFolder = new File(filePath);
-        chapterCount = (int) mainFolder.listFiles(File::isDirectory).length;
-
-        System.out.println(chapterCount);
-
-        filePath = "mangatestres/solo-leveling_c000 _ c010";
-
-        mainFolder = new File(filePath);
-        chapterCount = (int) mainFolder.listFiles(File::isDirectory).length;
-
-        System.out.println(chapterCount);
-
-        mainFolder = new File(filePath);
-        directories = mainFolder.listFiles(File::isDirectory);
-        Arrays.sort(directories);
-        firstChapter = Integer.parseInt(directories[0].getName().substring(1));
-
-        chapterCount = (int) mainFolder.listFiles(File::isDirectory).length;
-        folder = new File(filePath + "/c" + String.format("%03d", firstChapter) + "/");
-        numberOfPages = folder.listFiles(File::isFile).length;
-
-        System.out.println(folder.getPath());
-        System.out.println(numberOfPages);
-
-        Manga eleceed = new Manga("Eleceed");
-        eleceed.setChapters(createChapters2(eleceed, "mangatestres/eleceed_c001 _ c010"));
-
-        Manga heroKillerBeolkkul = new Manga("Hero Killer Beolkkul");
-        heroKillerBeolkkul.setChapters(createChapters2(heroKillerBeolkkul, "mangatestres/hero-killer-beolkkul_c001 _ c010"));
-
-        Manga martialPeak = new Manga("Martial Peak");
-        martialPeak.setChapters(createChapters2(martialPeak, "mangatestres/martial-peak_c001 _ c010"));
-
-        Manga soloLeveling = new Manga("Solo Leveling");
-        soloLeveling.setChapters(createChapters2(soloLeveling, "mangatestres/solo-leveling_c000 _ c010"));
-
-        Manga tongariBooshiNoAtorie = new Manga("Tongari Booshi No Atorie");
-        tongariBooshiNoAtorie.setChapters(createChapters2(tongariBooshiNoAtorie, "mangatestres/tongari-booshi-no-atorie_c001 _ c010"));
-
+        createMangas("mangatestres");
     }
-    private static List<Chapter> createChapters2(Manga manga, String filePath) {
+
+    private static List<Manga> createMangas(String filePath) {
+        File mainFolder = new File(filePath);
+        System.out.println(mainFolder.getPath());
+        File[] directories = mainFolder.listFiles(File::isDirectory);
+
+        Map<String, List<File>> groupedDirectories = Arrays.stream(directories)
+                .collect(Collectors.groupingBy(directory -> directory.getName().split("_")[0]));
+
+        List<Manga> mangas = groupedDirectories.entrySet().stream()
+                .map(entry -> {
+                    String mangaName = entry.getKey();
+                    Manga manga = new Manga(mangaName);
+                    System.out.println("Manga: " + mangaName);
+
+                    List<Chapter> chapters = entry.getValue().stream()
+                            .flatMap(directory -> createChapters(manga, filePath + "/" + directory.getName() + "/").stream())
+                            .collect(Collectors.toList());
+
+                    manga.setChapters(chapters);
+                    return manga;
+                })
+                .collect(Collectors.toList());
+
+        return mangas;
+    }
+
+//    private static List<Manga> createMangas(String filePath) {
+//        List<Manga> mangas = new ArrayList<>();
+//
+//        File mainFolder = new File(filePath);
+//        System.out.println(mainFolder.getPath());
+//        File[] directories = mainFolder.listFiles(File::isDirectory);
+//        Arrays.stream(directories)
+//                .forEach(directory -> {
+//                    String directoryName = directory.getName();
+//                    String mangaName = directoryName.split("_")[0];
+//
+//                    Manga manga = new Manga(mangaName);
+//                    System.out.println("Manga: " + directory.getName());
+//                    manga.setChapters(createChapters(manga, filePath + "/" + directory.getName() + "/"));
+//                    mangas.add(manga);
+//                });
+//
+//        return null;
+//    }
+
+    private static List<Chapter> createChapters(Manga manga, String filePath) {
         File mainFolder = new File(filePath);
         File[] directories = mainFolder.listFiles(File::isDirectory);
         Arrays.sort(directories);
@@ -88,24 +74,29 @@ public class Main {
                 .map(directory -> {
                     String chapterName = directory.getName().substring(1);
                     Chapter chapter = new Chapter("Chapter " + chapterName, Double.parseDouble(chapterName), manga);
-                    File folder = new File(filePath + "/" + directory.getName() + "/");
-                    System.out.println(folder.getPath());
-                    int numberOfPages = folder.listFiles(File::isFile).length;
-                    List<Page> pages = IntStream.rangeClosed(1, numberOfPages)
-                            .mapToObj(j -> {
-                                try {
-                                    BufferedImage inputImage = ImageIO.read(Files.newInputStream(Path.of(folder.toPath() + "/" + String.format("%03d", j) + ".jpg")));
-                                    ByteArrayOutputStream jpgContent = new ByteArrayOutputStream();
-                                    ImageIO.write(inputImage, "jpg", jpgContent);
-                                    return new Page(j, jpgContent.toByteArray(), chapter);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                return null;
-                            })
-                            .toList();
-                    chapter.setPages(pages);
+                    System.out.println(chapterName);
+                    chapter.setPages(createPages(chapter,filePath + "/" + directory.getName() + "/"));
                     return chapter;
+                })
+                .toList();
+    }
+
+    private static List<Page> createPages(Chapter chapter, String filePath) {
+        File folder = new File(filePath);
+        int numberOfPages = folder.listFiles(File::isFile).length;
+
+        return IntStream.rangeClosed(1, numberOfPages)
+                .mapToObj(j -> {
+                    try {
+                        BufferedImage inputImage = ImageIO.read(Files.newInputStream(Path.of(folder.toPath() + "/" + String.format("%03d", j) + ".jpg")));
+                        //System.out.println("Page: " + j);
+                        ByteArrayOutputStream jpgContent = new ByteArrayOutputStream();
+                        ImageIO.write(inputImage, "jpg", jpgContent);
+                        return new Page(j, jpgContent.toByteArray(), chapter);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return null;
                 })
                 .toList();
     }
