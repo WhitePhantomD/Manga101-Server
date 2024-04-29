@@ -30,4 +30,5 @@ public class Manga {
     public Manga(String title) {
         this.title = title;
     }
+
 }

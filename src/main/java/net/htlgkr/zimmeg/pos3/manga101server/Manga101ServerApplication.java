@@ -31,8 +31,8 @@ public class Manga101ServerApplication {
     @Bean
     public CommandLineRunner seedDatabase(MangaRepository mangaRepository) {
         return args -> {
-//            List<Manga> mangas = createMangas("mangatestres");
-//            mangaRepository.saveAll(mangas);
+            List<Manga> mangas = createMangas("images");
+            mangaRepository.saveAll(mangas);
 
         };
     }
@@ -81,18 +81,28 @@ public class Manga101ServerApplication {
         int numberOfPages = folder.listFiles(File::isFile).length;
 
         return IntStream.rangeClosed(1, numberOfPages)
-                .mapToObj(j -> {
-                    try {
-                        BufferedImage inputImage = ImageIO.read(Files.newInputStream(Path.of(folder.toPath() + "/" + String.format("%03d", j) + ".jpg")));
-                        ByteArrayOutputStream jpgContent = new ByteArrayOutputStream();
-                        ImageIO.write(inputImage, "jpg", jpgContent);
-                        return new Page(j, jpgContent.toByteArray(), chapter);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    return null;
-                })
-                .toList();
+                .mapToObj(j -> new Page(j, filePath + "/" + String.format("%03d", j) + ".jpg", chapter)).toList();
+
     }
+
+    //TODO: Change the Byte Array to a Blob
+//    private static List<Page> createPages(Chapter chapter, String filePath) {
+//        File folder = new File(filePath);
+//        int numberOfPages = folder.listFiles(File::isFile).length;
+//
+//        return IntStream.rangeClosed(1, numberOfPages)
+//                .mapToObj(j -> {
+//                    try {
+//                        BufferedImage inputImage = ImageIO.read(Files.newInputStream(Path.of(folder.toPath() + "/" + String.format("%03d", j) + ".jpg")));
+//                        ByteArrayOutputStream jpgContent = new ByteArrayOutputStream();
+//                        ImageIO.write(inputImage, "jpg", jpgContent);
+//                        return new Page(j, jpgContent.toByteArray(), chapter);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                    return null;
+//                })
+//                .toList();
+//    }
 
 }

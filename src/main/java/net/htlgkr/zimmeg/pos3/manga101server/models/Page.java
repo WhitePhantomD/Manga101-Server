@@ -19,13 +19,12 @@ public class Page {
 
     private int pageNumber;
 
-    @Lob
-    private byte[] image;
+    String image;
 
     @ManyToOne
     private Chapter chapter;
 
-    public Page(int pageNumber, byte[] image, Chapter chapter) {
+    public Page(int pageNumber, String image, Chapter chapter) {
         this.pageNumber = pageNumber;
         this.image = image;
         this.chapter = chapter;
