@@ -19,7 +19,7 @@ public class Page {
 
     private int pageNumber;
 
-    String image;
+    private String image;
 
     @ManyToOne
     private Chapter chapter;
