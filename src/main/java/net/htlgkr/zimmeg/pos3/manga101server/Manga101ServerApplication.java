@@ -31,8 +31,8 @@ public class Manga101ServerApplication {
     @Bean
     public CommandLineRunner seedDatabase(MangaRepository mangaRepository) {
         return args -> {
-            List<Manga> mangas = createMangas("images");
-            mangaRepository.saveAll(mangas);
+//            List<Manga> mangas = createMangas("images");
+//            mangaRepository.saveAll(mangas);
 
         };
     }
@@ -50,7 +50,7 @@ public class Manga101ServerApplication {
                     Manga manga = new Manga(mangaName);
 
                     List<Chapter> chapters = entry.getValue().stream()
-                            .flatMap(directory -> createChapters(manga, filePath + "/" + directory.getName() + "/").stream())
+                            .flatMap(directory -> createChapters(manga, filePath + "/" + directory.getName()).stream())
                             .collect(Collectors.toList());
 
                     manga.setChapters(chapters);
@@ -70,7 +70,7 @@ public class Manga101ServerApplication {
                 .map(directory -> {
                     String chapterName = directory.getName().substring(1);
                     Chapter chapter = new Chapter("Chapter " + chapterName, Double.parseDouble(chapterName), manga);
-                    chapter.setPages(createPages(chapter,filePath + "/" + directory.getName() + "/"));
+                    chapter.setPages(createPages(chapter,filePath + "/" + directory.getName()));
                     return chapter;
                 })
                 .toList();

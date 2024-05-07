@@ -51,7 +51,7 @@ public class MangaController {
                 chapter.getTitle(),
                 chapter.getChapterNumber(),
                 chapter.getPages().stream()
-                        .map(page -> new PageDto(page.getPageNumber(),page.getImage(),chapter.getId()))
+                        .map(page -> new PageDto(page.getPageNumber(),page.getImage().replace('/','~'),chapter.getId()))
                         .toList(),chapter.getManga().getId());
     }
 
