@@ -85,7 +85,7 @@ public class Manga101ServerApplication {
 
     }
 
-    //TODO: Change the Byte Array to a Blob
+
 //    private static List<Page> createPages(Chapter chapter, String filePath) {
 //        File folder = new File(filePath);
 //        int numberOfPages = folder.listFiles(File::isFile).length;
