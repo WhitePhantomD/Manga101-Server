@@ -1,10 +1,7 @@
 package net.htlgkr.zimmeg.pos3.manga101server.controller;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
-import net.htlgkr.zimmeg.pos3.manga101server.dtos.ChapterDto;
-import net.htlgkr.zimmeg.pos3.manga101server.dtos.ChapterDtoTest;
-import net.htlgkr.zimmeg.pos3.manga101server.dtos.MangaDto;
-import net.htlgkr.zimmeg.pos3.manga101server.dtos.PageDto;
+import net.htlgkr.zimmeg.pos3.manga101server.dtos.*;
 import net.htlgkr.zimmeg.pos3.manga101server.models.Chapter;
 import net.htlgkr.zimmeg.pos3.manga101server.models.Manga;
 import net.htlgkr.zimmeg.pos3.manga101server.models.Page;
@@ -55,4 +52,11 @@ public class MangaController {
                         .toList(),chapter.getManga().getId());
     }
 
+    @GetMapping("/chapter/list/{id}")
+    public ChapterListDto getChapterList(@PathVariable int id) {
+        Manga manga = mangaService.getMangaById(id);
+        return new ChapterListDto(manga.getId(),manga.getTitle(),manga.getChapters().stream()
+                .map(chapter -> new OnlyChapterDto(chapter.getId(),chapter.getTitle(),chapter.getChapterNumber()))
+                .toList());
+    }
 }
