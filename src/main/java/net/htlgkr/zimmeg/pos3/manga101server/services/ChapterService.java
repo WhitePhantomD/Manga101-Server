@@ -27,4 +27,19 @@ public class ChapterService {
         return chapter;
     }
 
+    public int getNextChapterId(int mangaId, double currentChapterNumber) {
+        if (!chapterRepository.findNextChapterId(mangaId, currentChapterNumber).isEmpty()) {
+            return chapterRepository.findNextChapterId(mangaId, currentChapterNumber).getFirst();
+        }
+        return -1;
+    }
+
+    public int getPreviousChapterId(int mangaId, double currentChapterNumber) {
+        if (!chapterRepository.findPreviousChapterId(mangaId, currentChapterNumber).isEmpty()) {
+            return chapterRepository.findPreviousChapterId(mangaId, currentChapterNumber).getFirst();
+        }
+
+        return -1;
+    }
+
 }

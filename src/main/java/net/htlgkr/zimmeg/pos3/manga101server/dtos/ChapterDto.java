@@ -6,5 +6,7 @@ public record ChapterDto(int id,
                          String title,
                          double chapterNumber,
                          List<PageDto> images,
-                         int mangaId) {
+                         int mangaId,
+                         int nextChapterId,
+                         int previousChapterId) {
 }

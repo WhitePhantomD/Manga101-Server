@@ -49,7 +49,10 @@ public class MangaController {
                 chapter.getChapterNumber(),
                 chapter.getPages().stream()
                         .map(page -> new PageDto(page.getPageNumber(),page.getImage().replace('/','~').replaceFirst("~","/"),chapter.getId()))
-                        .toList(),chapter.getManga().getId());
+                        .toList(),
+                chapter.getManga().getId(),
+                chapterService.getNextChapterId(chapter.getManga().getId(),chapter.getChapterNumber()),
+                chapterService.getPreviousChapterId(chapter.getManga().getId(),chapter.getChapterNumber()));
     }
 
     @GetMapping("/chapter/list/{id}")
@@ -59,4 +62,17 @@ public class MangaController {
                 .map(chapter -> new OnlyChapterDto(chapter.getId(),chapter.getTitle(),chapter.getChapterNumber()))
                 .toList());
     }
+
+    @GetMapping("/chapter/next/{id}")
+    public int getNextChapterId(@PathVariable int id) {
+        Chapter chapter = chapterService.getChapterById(id);
+        return chapterService.getNextChapterId(chapter.getManga().getId(),chapter.getChapterNumber());
+    }
+
+    @GetMapping("/chapter/previous/{id}")
+    public int getPreviousChapterId(@PathVariable int id) {
+        Chapter chapter = chapterService.getChapterById(id);
+        return chapterService.getPreviousChapterId(chapter.getManga().getId(),chapter.getChapterNumber());
+    }
+
 }
