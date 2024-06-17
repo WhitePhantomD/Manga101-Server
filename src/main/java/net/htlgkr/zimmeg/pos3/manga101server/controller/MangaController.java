@@ -85,7 +85,7 @@ public class MangaController {
         manga.setTitle(mangaDto.getTitle());
         manga.setAuthor(mangaDto.getAuthor());
         manga.setDescription(mangaDto.getDescription());
-        manga.setCoverImage("coverimages/"+mangaDto.getTitle());
+        manga.setCoverImage("/images/cover/"+mangaDto.getTitle());
         manga.setGenres(mangaDto.getGenres());
         manga.setStatus(mangaDto.getStatus());
 
