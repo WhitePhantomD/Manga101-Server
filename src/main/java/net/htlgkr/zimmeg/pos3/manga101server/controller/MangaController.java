@@ -1,18 +1,20 @@
 package net.htlgkr.zimmeg.pos3.manga101server.controller;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
+
 import net.htlgkr.zimmeg.pos3.manga101server.dtos.*;
 import net.htlgkr.zimmeg.pos3.manga101server.models.Chapter;
 import net.htlgkr.zimmeg.pos3.manga101server.models.Manga;
 import net.htlgkr.zimmeg.pos3.manga101server.models.Page;
+import net.htlgkr.zimmeg.pos3.manga101server.repositories.MangaRepository;
 import net.htlgkr.zimmeg.pos3.manga101server.services.ChapterOnlineService;
 import net.htlgkr.zimmeg.pos3.manga101server.services.ChapterService;
 import net.htlgkr.zimmeg.pos3.manga101server.services.MangaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @CrossOrigin
 @RestController
@@ -24,6 +26,8 @@ public class MangaController {
     private ChapterService chapterService;
     @Autowired
     private ChapterOnlineService chapterOnlineService;
+    @Autowired
+    private MangaRepository mangaRepository;
 
     @GetMapping("/all")
     public List<Object[]> getAllManga() {
@@ -73,6 +77,57 @@ public class MangaController {
     public int getPreviousChapterId(@PathVariable int id) {
         Chapter chapter = chapterService.getChapterById(id);
         return chapterService.getPreviousChapterId(chapter.getManga().getId(),chapter.getChapterNumber());
+    }
+
+    @PutMapping("/manga/{id}")
+    public ResponseEntity<Manga> updateManga(@PathVariable int id, @RequestBody MangaDto mangaDto) throws IOException {
+        Manga manga = mangaRepository.findById(id).orElseThrow(() -> new RuntimeException("Manga not found"));
+        manga.setTitle(mangaDto.getTitle());
+        manga.setAuthor(mangaDto.getAuthor());
+        manga.setDescription(mangaDto.getDescription());
+        manga.setCoverImage("coverimages/"+mangaDto.getTitle());
+        manga.setGenres(mangaDto.getGenres());
+        manga.setStatus(mangaDto.getStatus());
+
+        Manga updatedManga = mangaRepository.save(manga);
+        return ResponseEntity.ok(updatedManga);
+    }
+
+    @GetMapping("/manga/{id}")
+    public CompleteMangaDto getMangaById(@PathVariable int id) {
+        Manga manga = mangaService.getCompleteMangaById(id);
+        return new CompleteMangaDto(
+                manga.getId(),
+                manga.getTitle(),
+                manga.getCoverImage(),
+                manga.getDescription(),
+                manga.getAuthor(),
+                manga.getStatus(),
+                manga.getGenres(),
+                manga.getChapters().size()
+                );
+    }
+
+    @GetMapping("/search/{subString}")
+    public List<SearchDto> searchManga(@PathVariable String subString) {
+
+        return mangaService.getMangaByString(subString).stream()
+                .map(manga -> new SearchDto(manga.getId(),manga.getTitle(),manga.getAuthor(),manga.getCoverImage(),manga.getGenres().toString(),manga.getStatus().toString(),String.valueOf(manga.getChapters().size())))
+                .toList();
+    }
+
+    @GetMapping("/manga/all")
+    public List<CompleteMangaDto> getMangaAll() {
+        return mangaRepository.findAll().stream().map(manga -> new CompleteMangaDto(
+                manga.getId(),
+                manga.getTitle(),
+                manga.getCoverImage(),
+                manga.getDescription(),
+                manga.getAuthor(),
+                manga.getStatus(),
+                manga.getGenres(),
+                manga.getChapters().size()
+        )).toList();
     }
 
 }
